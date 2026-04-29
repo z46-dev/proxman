@@ -53,12 +53,6 @@ func NewClient(apiBaseURL, apiTokenID, apiTokenSecret string) (client *Client, e
 
 // Cleans up the client and all the things related to it
 func (c *Client) Close() (err error) {
-	if c.taskQueue != nil {
-		if err = c.taskQueue.Close(); err != nil {
-			return
-		}
-	}
-
 	return
 }
 
@@ -83,4 +77,18 @@ func (c *Client) refreshNodes() (err error) {
 	}
 
 	return
+}
+
+func (c *Client) Living() bool {
+	if c.client == nil {
+		return false
+	}
+
+	// Check if we can get cluster info as a basic liveness check
+	var err error
+	if _, err = c.client.Cluster(c.bg); err != nil {
+		return false
+	}
+
+	return true
 }

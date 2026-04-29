@@ -1,6 +1,9 @@
 package tests
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+	"testing"
+)
 
 func randomBytes(n int) (b []byte) {
 	b = make([]byte, n)
@@ -9,4 +12,12 @@ func randomBytes(n int) (b []byte) {
 	}
 
 	return
+}
+
+func mustConfig(t *testing.T) {
+	var err error
+
+	if err = initConfig("testconfig.toml"); err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
 }

@@ -5,13 +5,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/hibiken/asynq"
 	"github.com/luthermonson/go-proxmox"
 )
 
 type Client struct {
 	lockPool   *sync.Pool
-	taskQueue  *asynq.Client
 	bg         context.Context
 	httpClient *http.Client
 

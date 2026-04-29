@@ -1,36 +1,32 @@
 package tests
 
 import (
-	"math/rand/v2"
 	"testing"
-	"time"
 
-	"github.com/hibiken/asynq"
+	"github.com/stretchr/testify/assert"
+	"github.com/z46-dev/proxman"
 )
 
-func TestAsynqLoop(t *testing.T) {
+func TestAPIFailsWithIncorrectStuff(t *testing.T) {
+	mustConfig(t)
+
 	var (
-		client    *asynq.Client = asynq.NewClient(asynq.RedisClientOpt{Addr: "127.0.0.1:6379"})
-		taskTypes []string      = []string{"test:task1", "test:task2", "test:task3"}
-		err       error
+		client *proxman.Client
+		err    error
 	)
 
-	defer client.Close()
+	// 127.0.0.0/8 is reserved for loopback, so this should fail to connect to any API
+	client, err = proxman.NewClient("https://127.127.127.127:8006", "token", "token")
 
-	for range 128 {
-		var (
-			task *asynq.Task = asynq.NewTask(taskTypes[rand.IntN(len(taskTypes))], randomBytes(rand.IntN(128)+128), asynq.ProcessIn(time.Millisecond*time.Duration(rand.IntN(10000))))
-			info *asynq.TaskInfo
-		)
+	assert.Error(t, err)
+	assert.NotNil(t, client)
+	assert.False(t, client.Living())
+}
 
-		if info, err = client.Enqueue(task); err != nil {
-			t.Fatalf("failed to enqueue task: %v", err)
-			return
-		}
+func TestAPILoadNodes(t *testing.T) {
+	mustConfig(t)
 
-		t.Logf("enqueued task: type=%s, id=%s", task.Type(), info.ID)
+	if !config.EnableProxmoxTesting {
+		t.Skip("Proxmox API testing is disabled in config")
 	}
-
-	// Consumer
-	
 }
